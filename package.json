@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/robbydhindsa/tinyapp/issues"
   },
-  "homepage": "https://github.com/robbydhindsa/tinyapp#readme"
+  "homepage": "https://github.com/robbydhindsa/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
