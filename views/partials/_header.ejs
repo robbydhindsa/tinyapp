@@ -19,10 +19,11 @@
       </div>
       <div>
         <form method="POST" action="/login">
-          <label for="">Login:</label>
+          <span>Logged in as: <%= username %></span>
           <input 
             type="text"
             name="username"
+            placeholder="Username"
             style="width: 300px; margin: 1em"
           />
           <button type="submit" class="btn btn-outline-dark">Submit</button>
