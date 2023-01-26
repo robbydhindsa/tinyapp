@@ -36,18 +36,6 @@ const users = {
   }
 };
 
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n")
-// });
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -118,14 +106,33 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  // res.cookie('username', req.body.username);
+  const email = req.body.email;
+  const password = req.body.password;
+  // Is email already registered?
+  let foundUser = null;
+  for (const u_id in users) {
+    const user = users[u_id];
+    if (user.email === email) {
+      foundUser = user;
+    }
+  }
+  // If email is not registered:
+  if (!foundUser) {
+    return res.status(403).send("Email is not registered.");
+  }
+  // If password does not match:
+  if (foundUser.password !== password) {
+    return res.status(403).send("Password is incorrect.");
+  }
+
+  res.cookie("user_id", foundUser.id);
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
   res.cookie("user_id", users[req.cookies.user_id]);
   res.clearCookie("user_id", users[req.cookies.user_id]);
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
@@ -162,3 +169,7 @@ app.post("/register", (req, res) => {
   console.log(users);
   res.redirect("/urls");
 });
+
+
+// WHEN LOGGING IN THRU LOGIN BUTTON, LOGOUT BUTTON DOESN'T DISPLAY
+// WHEN LOGGING IN THRU REGISTER BUTTON, LOGOUT BUTTON DISPLAYS
