@@ -4,13 +4,13 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 function generateRandomString() {
-  // Math.random().toString(6).substring(2, 8);
-  let result = '';
-  let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let stringLength = 6;
-  for (let i = 0; i < stringLength; i++) {
-    result += characters.charAt(Math.floor(Math.random() * stringLength));
-  }
+  let result = Math.random().toString(36).substring(2, 8);
+  // let result = '';
+  // let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  // let stringLength = 6;
+  // for (let i = 0; i < stringLength; i++) {
+  //   result += characters.charAt(Math.floor(Math.random() * stringLength));
+  // }
   return result;
 }
 
@@ -21,6 +21,19 @@ app.use(cookieParser()); // populates req.cookies
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  userRandomID: {
+    id: "abc",
+    email: "a@a.com",
+    password: "1234"
+  },
+  user2RandomID: {
+    id: "def",
+    email: "b@b.com",
+    password: "5678"
+  }
 };
 
 // app.get("/", (req, res) => {
@@ -111,3 +124,20 @@ app.get("/register", (req, res) => {
   };
   res.render("registration", templateVars);
 });
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const id = generateRandomString();
+  const newUser = {
+    id: id,
+    email: email,
+    password: password
+  };
+  users[id] = newUser;
+  res.cookie("user_id", id);
+
+  console.log(users);
+  res.redirect("/urls");
+})
