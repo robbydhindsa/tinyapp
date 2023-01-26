@@ -116,8 +116,8 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  // res.cookie("username", req.body.username);
-  // res.clearCookie("username", req.body.username);
+  res.cookie("user_id", users[req.cookies.user_id]);
+  res.clearCookie("user_id", users[req.cookies.user_id]);
   res.redirect("/urls");
 });
 
@@ -132,6 +132,17 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
+  if (email === '' || password === '') {
+    return res.status(400).send("Please provide a username and password");
+  }
+
+  for (const u_id in users) {
+    const user = users[u_id];
+    if (user.email === email) {
+      return res.status(400).send("Email already exists");
+    }
+  }
+
   const id = generateRandomString();
   const newUser = {
     id: id,
@@ -143,4 +154,4 @@ app.post("/register", (req, res) => {
 
   console.log(users);
   res.redirect("/urls");
-})
+});
