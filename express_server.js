@@ -5,12 +5,6 @@ const PORT = 8080; // default port 8080
 
 function generateRandomString() {
   let result = Math.random().toString(36).substring(2, 8);
-  // let result = '';
-  // let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  // let stringLength = 6;
-  // for (let i = 0; i < stringLength; i++) {
-  //   result += characters.charAt(Math.floor(Math.random() * stringLength));
-  // }
   return result;
 }
 
@@ -96,6 +90,12 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  // Check for existing cookie (user logged in?)
+  const u_id = req.cookies.user_id;
+  if (u_id) {
+    res.redirect("/urls");
+  }
+  // Render login page if user not logged in
   const templateVars = {
     user: users[req.cookies.user_id]
   };
@@ -133,6 +133,12 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  // Check for existing cookie (user logged in?)
+  const u_id = req.cookies.user_id;
+  if (u_id) {
+    res.redirect("/urls");
+  }
+  // Render register page if user not logged in
   const templateVars = {
     user: users[req.cookies.user_id]
   };
