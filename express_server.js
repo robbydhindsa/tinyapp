@@ -83,6 +83,11 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   let id = req.params.id;
+
+  if (!urlDatabase[id]) {
+    return res.status(400).send("This shortened URL does not exist.");
+  }
+
   const longURL = urlDatabase[id];
   res.redirect(longURL);
 });
