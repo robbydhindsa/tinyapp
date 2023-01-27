@@ -1,5 +1,6 @@
 const cookieParser = require("cookie-parser");
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -12,29 +13,8 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true })); // populates req.body - express's "body parser"
 app.use(cookieParser()); // populates req.cookies
 
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    user_id: "abc"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    user_id: "def"
-  }
-};
-
-const users = {
-  abc: {
-    id: "abc",
-    email: "a@a.com",
-    password: "1234"
-  },
-  def: {
-    id: "def",
-    email: "b@b.com",
-    password: "5678"
-  }
-};
+const urlDatabase = {};
+const users = {};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -206,7 +186,7 @@ app.post("/login", (req, res) => {
     return res.status(403).send("Email is not registered.");
   }
   // If password does not match:
-  if (foundUser.password !== password) {
+  if ((bcrypt.compareSync(password, foundUser.password)) === false) {
     return res.status(403).send("Password is incorrect.");
   }
 
@@ -236,6 +216,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   if (email === '' || password === '') {
     return res.status(400).send("Please provide a username and password");
@@ -252,7 +233,7 @@ app.post("/register", (req, res) => {
   const newUser = {
     id: id,
     email: email,
-    password: password
+    password: hashedPassword
   };
   users[id] = newUser;
   res.cookie("user_id", id);
