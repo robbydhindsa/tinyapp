@@ -1,13 +1,15 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const cookieSession = require('cookie-session');
+const getUserByEmail = require("./helpers");
+
 const app = express();
 const PORT = 8080; // default port 8080
 
-function generateRandomString() {
+const generateRandomString = function() {
   let result = Math.random().toString(36).substring(2, 8);
   return result;
-}
+};
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true })); // populates req.body - express's "body parser"
@@ -17,7 +19,7 @@ app.use(cookieSession({
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 const urlDatabase = {};
 const users = {};
@@ -26,27 +28,26 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-const urlsForUser = function(u_id) {
+const urlsForUser = function(u_Id) {
   const urls = {};
   for (const id in urlDatabase) {
-    if (urlDatabase[id].user_id === u_id) {
+    if (urlDatabase[id].user_id === u_Id) {
       urls[id] = urlDatabase[id];
     }
   }
   console.log(urls);
   return urls;
-}
-
+};
 
 app.get("/urls", (req, res) => {
   // Return HTML error if user is not logged in
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     return res.status(400).send("Must be logged in to view shortened URLs.");
   }
 
   const templateVars = {
-    urls: urlsForUser(u_id),
+    urls: urlsForUser(u_Id),
     user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
@@ -54,8 +55,8 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   // If user not logged in, redirect to login page
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     res.redirect("/login");
   }
   // If user logged in, render urls_new template
@@ -67,8 +68,8 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   // Return HTML error if user is not logged in
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     return res.status(400).send("Must be logged in to view/edit shortened URLs.");
   }
   // Return HTML error if id does not exist
@@ -76,7 +77,7 @@ app.get("/urls/:id", (req, res) => {
     return res.status(400).send("This short URL does not exist.");
   }
   // Return HTML error if user does not own the URL
-  if (u_id !== urlDatabase[req.params.id].user_id) {
+  if (u_Id !== urlDatabase[req.params.id].user_id) {
     return res.status(400).send("This URL is not associated with your account.");
   }
 
@@ -90,8 +91,8 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   // If user not logged in, respond with error
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     return res.status(400).send("Must be logged in to shorten URLs.");
   }
   // If user logged in, allow interaction with server
@@ -101,7 +102,7 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL; // key-value pair is being saved to the urlDatabase
   urlDatabase[shortURL] = {
     longURL: longURL,
-    user_id: u_id
+    user_id: u_Id
   };
   res.redirect(`/urls/${shortURL}`); // redirect to /urls/:id
 });
@@ -125,12 +126,12 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.status(400).send("This short URL does not exist.");
   }
   // Return HTML error if user is not logged in
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     return res.status(400).send("Must be logged in to delete shortened URLs.");
   }
   // Return HTML error if user does not own the URL
-  if (u_id !== urlDatabase[req.params.id].user_id) {
+  if (u_Id !== urlDatabase[req.params.id].user_id) {
     return res.status(400).send("This URL is not associated with your account.");
   }
 
@@ -139,18 +140,17 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  
   // Return HTML error if id does not exist
   if (!urlDatabase[req.params.id]) {
     return res.status(400).send("This short URL does not exist.");
   }
   // Return HTML error if user is not logged in
-  const u_id = req.session.user_id;
-  if (!u_id) {
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
     return res.status(400).send("Must be logged in to view/edit shortened URLs.");
   }
   // Return HTML error if user does not own the URL
-  if (u_id !== urlDatabase[req.params.id].user_id) {
+  if (u_Id !== urlDatabase[req.params.id].user_id) {
     return res.status(400).send("This URL is not associated with your account.");
   }
 
@@ -158,15 +158,15 @@ app.post("/urls/:id", (req, res) => {
   const longURL = req.body.longURL;
   urlDatabase[id] = {
     longURL: longURL,
-    user_id: u_id
+    user_id: u_Id
   };
   res.redirect("/urls");
 });
 
 app.get("/login", (req, res) => {
   // Check for existing cookie (user logged in?)
-  const u_id = req.session.user_id;
-  if (u_id) {
+  const u_Id = req.session.user_id;
+  if (u_Id) {
     res.redirect("/urls");
   }
   // Render login page if user not logged in
@@ -179,24 +179,18 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  // Is email already registered?
-  let foundUser = null;
-  for (const u_id in users) {
-    const user = users[u_id];
-    if (user.email === email) {
-      foundUser = user;
-    }
-  }
+  // User lookup function:
+  let userObject = getUserByEmail(email, users);
   // If email is not registered:
-  if (!foundUser) {
+  if (!userObject) {
     return res.status(403).send("Email is not registered.");
   }
   // If password does not match:
-  if ((bcrypt.compareSync(password, foundUser.password)) === false) {
+  if ((bcrypt.compareSync(password, userObject.password)) === false) {
     return res.status(403).send("Password is incorrect.");
   }
-
-  req.session.user_id = foundUser.id;
+  
+  req.session.user_id = userObject.id;
   res.redirect("/urls");
 });
 
@@ -207,8 +201,8 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   // Check for existing cookie (user logged in?)
-  const u_id = req.session.user_id;
-  if (u_id) {
+  const u_Id = req.session.user_id;
+  if (u_Id) {
     res.redirect("/urls");
   }
   // Render register page if user not logged in
@@ -222,18 +216,17 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-
+  // Check for empty input fields:
   if (email === '' || password === '') {
-    return res.status(400).send("Please provide a username and password");
+    return res.status(400).send("Please provide a username and password.");
   }
-
-  for (const u_id in users) {
-    const user = users[u_id];
-    if (user.email === email) {
-      return res.status(400).send("Email already exists");
-    }
+  // User lookup function:
+  let userObject = getUserByEmail(email, users);
+  // If user already exists return error:
+  if (userObject) {
+    return res.status(400).send("Email already exists.");
   }
-
+  // Register new user to database:
   const id = generateRandomString();
   const newUser = {
     id: id,
@@ -246,4 +239,3 @@ app.post("/register", (req, res) => {
   console.log(users);
   res.redirect("/urls");
 });
-
