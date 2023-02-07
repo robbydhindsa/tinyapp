@@ -24,9 +24,6 @@ app.use(cookieSession({
 const urlDatabase = {};
 const users = {};
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
 
 const urlsForUser = function(u_Id) {
   const urls = {};
@@ -238,4 +235,8 @@ app.post("/register", (req, res) => {
 
   console.log(users);
   res.redirect("/urls");
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
