@@ -36,6 +36,19 @@ const urlsForUser = function(u_Id) {
   return urls;
 };
 
+
+app.get("/", (req, res) => {
+  // If user not logged in, redirect to login page
+  const u_Id = req.session.user_id;
+  if (!u_Id) {
+    res.redirect("/login");
+  }
+  // If user is logged in, redirect to /urls page
+  if (u_Id) {
+    res.redirect("/urls");
+  }
+});
+
 app.get("/urls", (req, res) => {
   // Return HTML error if user is not logged in
   const u_Id = req.session.user_id;
